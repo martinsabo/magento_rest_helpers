@@ -1,25 +1,21 @@
-# MagentoRestHelpers
+# Magento rest helpers
 
-This game currently provide only basic helpers needed for export of shipments to 3rd party delivery service.
-Some of the parts are usable when you want to create your own client class (api client and shipments modules).
+This gem currently provides only basic helpers needed for export of shipments to 3rd party delivery service.
+Some of the parts (api client and shipments module) are usable when you want to create your own client class or module.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'magento_rest_helpers'
+    gem 'magento_rest_helpers', :git => 'https://github.com/martinsabo/magento_rest_helpers.git'
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install magento_rest_helpers
-
 ## Usage
 
-Api client module needs to be configured before first use. In Rails app can be the configuration block placed into
+Api client module needs to be configured first. In Rails app you can place the configuration block into
 initializer.
 
 ```ruby
@@ -28,7 +24,7 @@ MagentoRestHelpers::ApiClient.configure do |config|
   config.consumer_key = "some_key"
   config.consumer_secret = "some_secret"
   config.access_token = "oauth_token"
-  config.access_token_secret = oauth_token_secret"
+  config.access_token_secret = "oauth_token_secret"
   config.site = "https://www.yourmagento.com"
 end
 
@@ -36,9 +32,9 @@ end
 
 ### Example command line client script
 
-In this example is used module created for Slovak post export. It needs to be configured first as well. Shipping methods
-names from magento need to be paired to Slovak post method codes. This script saves xml files to harddrive for later import
-to Slovak post shipments management tool [http://eph.posta.sk/].
+This example script is using module created for Slovak post export. Magento's shipping
+methods need to be paired to Slovak post's shipping method codes in configuration block. This example saves xml files to harddrive for later import
+to Slovak post shipments management tool http://eph.posta.sk/.
 
 ```ruby
 # coding: utf-8
@@ -52,7 +48,7 @@ MagentoRestHelpers::ApiClient.configure do |config|
   config.consumer_key = "some_key"
   config.consumer_secret = "some_secret"
   config.access_token = "oauth_token"
-  config.access_token_secret = oauth_token_secret"
+  config.access_token_secret = "oauth_token_secret"
   config.site = "https://www.yourmagento.com"
 end
 
@@ -64,23 +60,25 @@ MagentoRestHelpers::Export::SlovakPostXmlExporter.configure do |config|
   config.bank_account_nr = "111111111111/11111"
 end
 
-MagentoRestHelpers::Export::SlovakPostXmlExporter.generate_sheets(ARGV[0], ARGV[1], 10, ARGV[2])
-
+sheets = MagentoRestHelpers::Export::SlovakPostXmlExporter.generate_sheets(ARGV[0], ARGV[1], 10)
+MagentoRestHelpers::Export::SlovakPostXmlExporter.save_files(sheets, ARGV[2], ARGV[0])
 
 ```
 
 ### Magento setup
 
-If you are using REST api first time in your magento installation, please double check your configuration before you
+If you are using REST api for the first time with your magento installation, please double check your magento configuration before you
 start to blame your own code.
 
 ### Useful how-to articles
-[http://inchoo.net/magento/magento-rest-and-oauth-intro/]
-[http://inchoo.net/magento/configure-magento-rest-and-oauth-settings/]
+
+* http://inchoo.net/magento/magento-rest-and-oauth-intro/
+* http://inchoo.net/magento/configure-magento-rest-and-oauth-settings/
 
 ### Official magento docs
-[http://www.magentocommerce.com/api/rest/authentication/oauth_configuration.html]
-[http://www.magentocommerce.com/api/rest/get_filters.html]
+
+* http://www.magentocommerce.com/api/rest/authentication/oauth_configuration.html
+* http://www.magentocommerce.com/api/rest/get_filters.html
 
 ## Troubleshooting
 

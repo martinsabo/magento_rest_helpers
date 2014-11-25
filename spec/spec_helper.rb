@@ -88,9 +88,10 @@ RSpec.configure do |config|
 =end
 end
 
+# ignore requests to outer world
 require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)
 
 # support for duplicate keys in parameters
-# otherwise webmock chokes on magent filter params and throws "ArgumentError: comparison of Array with Array failed"
+# otherwise webmock chokes on magento filter params and throws "ArgumentError: comparison of Array with Array failed"
 WebMock::Config.instance.query_values_notation = :flat_array

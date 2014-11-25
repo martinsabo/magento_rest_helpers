@@ -41,16 +41,11 @@ module MagentoRestHelpers
                       </EPH>"
 
 
-      def self.generate_sheets(from_date=nil, to_date=nil, limit=nil, file_root_path=nil, order_status="Processing")
-
+      def self.generate_sheets(from_date=nil, to_date=nil, limit=nil, order_status="Processing")
         # conversion to UTC needed for magento rest api filters
-        # (documentation to accepted magento datetime formats is non existent/well hidden)
+        # (documentation of accepted magento datetime formats is non existent/well hidden)
         from_date = from_date.nil? ? nil : Time.strptime(from_date, "%Y-%m-%d %H:%M").utc.strftime("%Y-%m-%d %H:%M")
         to_date = to_date.nil? ? nil : Time.strptime(to_date, "%Y-%m-%d %H:%M").utc.strftime("%Y-%m-%d %H:%M")
-
-        unless file_root_path.nil?
-          raise "Dir #{file_root_path} does not exist." unless File.directory?(file_root_path)
-        end
 
         conditions = {filter: [{attr_name: 'status', operator: 'in', value: order_status}], limit: limit}
         conditions[:filter] << {attr_name: 'created_at', operator: 'gt', value: from_date} unless from_date.nil?
@@ -60,29 +55,31 @@ module MagentoRestHelpers
         data = parse_xml_response(order_xml)
 
         unless data.empty?
-          contents = compile_result_xml(data)
-          unless file_root_path.nil?
-            contents.each{|content| save_file(content, file_root_path, from_date)}
-          else
-            return contents
-          end
+          compile_result_xml(data)
         else
           puts "No orders in selected date range (#{from_date} UTC - #{to_date} UTC) with '#{order_status}' status."
+          return []
+        end
+      end
+
+      def self.save_files(contents, file_root_path, from_date)
+        unless file_root_path.nil?
+          raise "Dir #{file_root_path} does not exist." unless File.directory?(file_root_path)
+        end
+
+        contents.each_with_index do |content, index|
+          filename = "podaciharok#{from_date.gsub(/\W/, '')}_#{index}.xml"
+          file_path = File.join(file_root_path, filename)
+          File.open(file_path, 'w') { |f| f.write(content) }
         end
       end
 
       private
 
-      def self.save_file(content, file_root_path, from_date)
-        filename = "podaciharok#{from_date.gsub(/\W/, '')}.xml"
-        file_path = File.join(file_root_path, filename)
-        File.open(file_path, 'w') { |f| f.write(content) }
-      end
-
       # shipments module method replacement
       # groups shipments by shipping description
       def self.parse_xml_response(xml)
-        result = Hash[self.configuration.shipping_methods_mapping.keys.map{|key| [key, []]}]
+        result = Hash[self.configuration.shipping_methods_mapping.keys.map { |key| [key, []] }]
         xml.xpath('/magento_api/data_item').each do |order|
           order_data = {}
           order_data[:address] = parse_xml_address(order.xpath("addresses/data_item[address_type = 'shipping']").first)
@@ -95,7 +92,7 @@ module MagentoRestHelpers
             raise RuntimeError.new("Shipping method in downloaded data is missing in configuration. Method name: #{shipping_method}.")
           end
         end
-        result.delete_if{|k,v| v==[]}
+        result.delete_if { |k, v| v==[] }
       end
 
       def self.to_slovak_node_names(address_hash)
@@ -130,7 +127,7 @@ module MagentoRestHelpers
         xml_contents
       end
 
-      # make xml output more readable
+      # makes xml output more readable
       def self.fix_xml_linebreaks(xml_string)
         Nokogiri::XML(xml_string, nil, 'UTF-8', &:noblanks).to_xml
       end

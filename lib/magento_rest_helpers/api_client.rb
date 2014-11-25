@@ -45,7 +45,7 @@ module MagentoRestHelpers
     def magento_query_string(conditions)
       query_params = {}
       unless conditions[:filter].nil?
-        conditions[:filter].each_with_index do |condition, index |
+        conditions[:filter].each_with_index do |condition, index|
           query_params["filter[#{index+1}][attribute]"] = condition[:attr_name]
 
           raise RuntimeError.new("Unknown magento operator present in filters array.") unless valid_operator(condition[:operator])
@@ -58,11 +58,11 @@ module MagentoRestHelpers
       query_params['order'] = conditions[:order] unless conditions[:order].nil?
       query_params['dir'] = conditions[:dir] unless conditions[:dir].nil?
 
-      query_params.collect{|key, val| "#{key}=#{val}" }.join('&')
+      query_params.collect { |key, val| "#{key}=#{val}" }.join('&')
     end
 
     def valid_operator(operator)
-      ["neg","in", "nin", "gt", "lt", "from", "to"].include? operator
+      ["neg", "in", "nin", "gt", "lt", "from", "to"].include? operator
     end
 
   end
