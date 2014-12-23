@@ -40,16 +40,15 @@ module MagentoRestHelpers
                         </Zasielky>
                       </EPH>"
 
-
-      def self.generate_sheets(from_date=nil, to_date=nil, limit=nil, order_status="Processing")
+      def self.generate_sheets(from_date = nil, to_date = nil, limit = nil, order_status = 'Processing')
         # conversion to UTC needed for magento rest api filters
         # (documentation of accepted magento datetime formats is non existent/well hidden)
-        from_date = from_date.nil? ? nil : Time.strptime(from_date, "%Y-%m-%d %H:%M").utc.strftime("%Y-%m-%d %H:%M")
-        to_date = to_date.nil? ? nil : Time.strptime(to_date, "%Y-%m-%d %H:%M").utc.strftime("%Y-%m-%d %H:%M")
+        from_date = from_date.nil? ? nil : Time.strptime(from_date, '%Y-%m-%d %H:%M').utc.strftime('%Y-%m-%d %H:%M')
+        to_date = to_date.nil? ? nil : Time.strptime(to_date, '%Y-%m-%d %H:%M').utc.strftime('%Y-%m-%d %H:%M')
 
-        conditions = {filter: [{attr_name: 'status', operator: 'in', value: order_status}], limit: limit}
-        conditions[:filter] << {attr_name: 'created_at', operator: 'gt', value: from_date} unless from_date.nil?
-        conditions[:filter] << {attr_name: 'created_at', operator: 'lt', value: to_date} unless to_date.nil?
+        conditions = {filter: [{ attr_name: 'status', operator: 'in', value: order_status }], limit: limit}
+        conditions[:filter] << { attr_name: 'created_at', operator: 'gt', value: from_date } unless from_date.nil?
+        conditions[:filter] << { attr_name: 'created_at', operator: 'lt', value: to_date } unless to_date.nil?
 
         order_xml = fetch_order_data(conditions)
         data = parse_xml_response(order_xml)
@@ -85,25 +84,24 @@ module MagentoRestHelpers
           order_data[:address] = parse_xml_address(order.xpath("addresses/data_item[address_type = 'shipping']").first)
           order_data[:cash_on_delivery] = parse_payment(order)
 
-          shipping_method = order.xpath("shipping_description").first.content
-          unless result[shipping_method].nil?
-            result[shipping_method] << order_data
-          else
-            raise RuntimeError.new("Shipping method in downloaded data is missing in configuration. Method name: #{shipping_method}.")
+          shipping_method = order.xpath('shipping_description').first.content
+          if result[shipping_method].nil?
+            fail("Shipping method in downloaded data is missing in configuration. Method name: #{shipping_method}.")
           end
+          result[shipping_method] << order_data
         end
-        result.delete_if { |k, v| v==[] }
+        result.delete_if { |k, v| v == [] }
       end
 
       def self.to_slovak_node_names(address_hash)
         mapping = {
-            name: 'Meno',
-            street: 'Ulica',
-            city: 'Mesto',
-            zip: 'PSC',
-            country: 'Krajina',
-            phone: 'Telefon',
-            organization: 'Organizacia',
+          name: 'Meno',
+          street: 'Ulica',
+          city: 'Mesto',
+          zip: 'PSC',
+          country: 'Krajina',
+          phone: 'Telefon',
+          organization: 'Organizacia'
         }
         result = {}
         address_hash.each_pair { |key, value| result[mapping[key]] = value }
@@ -120,8 +118,8 @@ module MagentoRestHelpers
             shipments_node << compile_shipment(record, result_xml)
           end
 
-          result_xml.xpath("//DruhZasielky").first.content = self.configuration.shipping_methods_mapping[shipping_type]
-          result_xml.root.add_namespace(nil, "http://ekp.posta.sk/LOGIS/Formulare/Podaj_v03")
+          result_xml.xpath('//DruhZasielky').first.content = self.configuration.shipping_methods_mapping[shipping_type]
+          result_xml.root.add_namespace(nil, 'http://ekp.posta.sk/LOGIS/Formulare/Podaj_v03')
           xml_contents << fix_xml_linebreaks(result_xml.to_xml)
         end
         xml_contents
@@ -148,7 +146,7 @@ module MagentoRestHelpers
           shipment << info
           services = result_xml.create_element('PouziteSluzby')
           service = result_xml.create_element('Sluzba')
-          service.content = "F" # Krehke by default
+          service.content = 'F' # Fragile flag by default
           services << service
           shipment << services
 
@@ -158,7 +156,8 @@ module MagentoRestHelpers
 
           cod_price = result_xml.create_element('CenaDobierky')
           # rounded - magento returns 4 decimal places
-          cod_price.content = '%.2f' % data[:cash_on_delivery].to_f
+          cod_price.content = sprintf('%.2f', data[:cash_on_delivery].to_f)
+
           info << cod_price
         end
 
