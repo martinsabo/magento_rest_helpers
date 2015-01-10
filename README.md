@@ -74,6 +74,7 @@ start to blame your own code.
 
 * http://inchoo.net/magento/magento-rest-and-oauth-intro/
 * http://inchoo.net/magento/configure-magento-rest-and-oauth-settings/
+* http://www.aschroder.com/2012/04/introduction-to-the-magento-rest-apis-with-oauth-in-version-1-7/
 
 ### Official magento docs
 
@@ -92,7 +93,6 @@ If you are getting 404 don't forget to check if you have proper rewrite rule in 
    }
 
 ```
-
 
 ## Contributing
 
