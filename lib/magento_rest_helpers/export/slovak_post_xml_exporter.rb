@@ -146,7 +146,10 @@ module MagentoRestHelpers
           shipment << info
           services = result_xml.create_element('PouziteSluzby')
           service = result_xml.create_element('Sluzba')
-          service.content = 'F' # Fragile flag by default
+
+          # Fragile flag can be set here
+          # service.content = 'F'
+
           services << service
           shipment << services
 
