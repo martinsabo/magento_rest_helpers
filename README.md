@@ -1,7 +1,7 @@
 # Magento rest helpers
 
 This gem currently provides only basic helpers needed for export of shipments to 3rd party delivery service.
-Some of the parts (api client and shipments module) are usable when you want to create your own client class or module.
+Some of the parts (api client and shipments module) can be helpful when you want to create your own client class or module.
 
 ## Installation
 
